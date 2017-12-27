@@ -12,7 +12,7 @@ files = []
 
 
 class Record:
-    #Переделать класс в виде словаря, убрать класс
+    #1|Переделать класс в виде словаря, убрать класс
     def __init__(self, mtime, fsize, lines, classes, methods, functions):
         self.time = mtime
         self.bytes = fsize
@@ -45,7 +45,7 @@ class Pile:
                 methods += int(bool(re_method.match(s)))
                 functions += int(bool(re_function.match(s)))
             f.close()
-            #Научить проверять на одинаковые подряд идущие записи и перезаписывать время в последней такой
+            #3|Научить проверять на одинаковые подряд идущие записи и перезаписывать время в последней такой
             self.check_points.append(Record(mtime, fsize, lines, classes, methods, functions))
         else:
             self.check_points.append(Record(mtime, None, None, None, None, None))
@@ -80,7 +80,6 @@ class Pile:
 
 
 def tostring(now, old, additive=''):
-    #Передевать в 'новое_значение(старое_значение +-разница | -+разница_в_вроцентах)'
     if old is None or now - old == 0:
         old = ''
     else:
@@ -132,8 +131,8 @@ def report():
     frame = '\n' + '+'.join(list(map(lambda x: '-' * (widch[x] + 2), widch)))[1: -1] + '\n'
     return frame.join((zero.format('name', 'CP', 'size', 'lines', 'classes', 'methods', 'functions'),
                        '\n'.join(map(lambda x: zero.format(x['name'], x['CPs']['str'], x['bytes']['out'],
-                                                          x['lines']['out'], x['classes']['out'],
-                                                          x['methods']['out'], x['functions']['out']), data)),
+                                                           x['lines']['out'], x['classes']['out'],
+                                                           x['methods']['out'], x['functions']['out']), data)),
                       zero.format('all', 'max', 'sum', 'sum', 'sum', 'sum', 'sum'),
                       zero.format(end['name'], end['cp'], end['size'], end['lines'],
                                   end['classes'], end['methods'], end['functions'])))
@@ -146,7 +145,7 @@ def started():
     else:
         pass
     current_files = os.listdir(os.getcwd())
-    #Удалить файл статистики из отслеживания
+    #4|далить файл статистики из отслеживания
     current_files = list(filter(lambda x: re_extension.match(x), current_files))
     for f in files:
         if f in current_files:
@@ -157,5 +156,5 @@ def started():
 
 
 started()
-#input()
-#Добавить сохранение и загрузку статистики из фалйа. JSON
+# input()
+#2|Добавить сохранение и загрузку статистики из фалйа. JSON
