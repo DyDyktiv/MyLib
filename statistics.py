@@ -11,17 +11,6 @@ re_function = re.compile('def ')
 files = []
 
 
-class Record:
-    #1|Переделать класс в виде словаря, убрать класс
-    def __init__(self, mtime, fsize, lines, classes, methods, functions):
-        self.time = mtime
-        self.bytes = fsize
-        self.lines = lines
-        self.classes = classes
-        self.methods = methods
-        self.functions = functions
-
-
 class Pile:
     def __init__(self, name):
         self.name = name
@@ -31,24 +20,24 @@ class Pile:
         self.check_point()
 
     def check_point(self):
-        mtime = int(time.time())
+        check = {'time': int(time.time())}
         if os.path.exists(self.name):  # Проверка на наличие файла.
-            fsize = os.path.getsize(self.name)  # Размер файла в байтах.
-            lines = 0
-            classes = 0
-            methods = 0
-            functions = 0
+            check['bytes'] = os.path.getsize(self.name)  # Размер файла в байтах.
+            check['lines'] = 0
+            check['classes'] = 0
+            check['methods'] = 0
+            check['functions'] = 0
             f = open(self.name, encoding='utf-8')
             for s in f:
-                lines += 1
-                classes += int(bool(re_class.match(s)))
-                methods += int(bool(re_method.match(s)))
-                functions += int(bool(re_function.match(s)))
+                check['lines'] += 1
+                check['classes'] += int(bool(re_class.match(s)))
+                check['methods'] += int(bool(re_method.match(s)))
+                check['functions'] += int(bool(re_function.match(s)))
             f.close()
-            #3|Научить проверять на одинаковые подряд идущие записи и перезаписывать время в последней такой
-            self.check_points.append(Record(mtime, fsize, lines, classes, methods, functions))
+            #2|Научить проверять на одинаковые подряд идущие записи и перезаписывать время в последней такой
+            self.check_points.append(check)
         else:
-            self.check_points.append(Record(mtime, None, None, None, None, None))
+            self.check_points.append({time.time(), None, None, None, None, None})
         self.now = self.check_points[-1]
         if len(self.check_points) > 1:
             self.ex = self.check_points[-2]
@@ -58,24 +47,24 @@ class Pile:
         if len(self.check_points) > 1:
             rep['name'] = self.name
             rep['CPs'] = {'num': len(self.check_points), 'str': str(len(self.check_points))}
-            rep['bytes'] = {'now': self.now.bytes, 'ex': self.ex.bytes,
-                            'out': tostring(self.now.bytes, self.ex.bytes, 'B')}
-            rep['lines'] = {'now': self.now.lines, 'ex': self.ex.lines,
-                            'out': tostring(self.now.lines, self.ex.lines)}
-            rep['classes'] = {'now': self.now.classes, 'ex': self.ex.classes,
-                              'out': tostring(self.now.classes, self.ex.classes)}
-            rep['methods'] = {'now': self.now.methods, 'ex': self.ex.methods,
-                              'out': tostring(self.now.methods, self.ex.methods)}
-            rep['functions'] = {'now': self.now.functions, 'ex': self.ex.functions,
-                                'out': tostring(self.now.functions, self.ex.functions)}
+            rep['bytes'] = {'now': self.now['bytes'], 'ex': self.ex['bytes'],
+                            'out': tostring(self.now['bytes'], self.ex['bytes'], 'B')}
+            rep['lines'] = {'now': self.now['lines'], 'ex': self.ex['lines'],
+                            'out': tostring(self.now['lines'], self.ex['lines'])}
+            rep['classes'] = {'now': self.now['classes'], 'ex': self.ex['classes'],
+                              'out': tostring(self.now['classes'], self.ex['classes'])}
+            rep['methods'] = {'now': self.now['methods'], 'ex': self.ex['methods'],
+                              'out': tostring(self.now['methods'], self.ex['methods'])}
+            rep['functions'] = {'now': self.now['functions'], 'ex': self.ex['functions'],
+                                'out': tostring(self.now['functions'], self.ex['functions'])}
         else:
             rep['name'] = self.name + '(new)'
             rep['CPs'] = {'num': len(self.check_points), 'str': str(len(self.check_points))}
-            rep['bytes'] = {'now': self.now.bytes, 'ex': 0, 'out': tostring(self.now.bytes, None, 'B')}
-            rep['lines'] = {'now': self.now.lines, 'ex': 0, 'out': tostring(self.now.lines, None)}
-            rep['classes'] = {'now': self.now.classes, 'ex': 0, 'out': tostring(self.now.classes, None)}
-            rep['methods'] = {'now': self.now.methods, 'ex': 0, 'out': tostring(self.now.methods, None)}
-            rep['functions'] = {'now': self.now.functions, 'ex': 0, 'out': tostring(self.now.functions, None)}
+            rep['bytes'] = {'now': self.now['bytes'], 'ex': 0, 'out': tostring(self.now['bytes'], None, 'B')}
+            rep['lines'] = {'now': self.now['lines'], 'ex': 0, 'out': tostring(self.now['lines'], None)}
+            rep['classes'] = {'now': self.now['classes'], 'ex': 0, 'out': tostring(self.now['classes'], None)}
+            rep['methods'] = {'now': self.now['methods'], 'ex': 0, 'out': tostring(self.now['methods'], None)}
+            rep['functions'] = {'now': self.now['functions'], 'ex': 0, 'out': tostring(self.now['functions'], None)}
         return rep
 
 
@@ -145,7 +134,7 @@ def started():
     else:
         pass
     current_files = os.listdir(os.getcwd())
-    #4|далить файл статистики из отслеживания
+    #3|далить файл статистики из отслеживания
     current_files = list(filter(lambda x: re_extension.match(x), current_files))
     for f in files:
         if f in current_files:
@@ -157,4 +146,4 @@ def started():
 
 started()
 # input()
-#2|Добавить сохранение и загрузку статистики из фалйа. JSON
+#1|Добавить сохранение и загрузку статистики из фалйа. JSON
