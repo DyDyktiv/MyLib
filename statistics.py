@@ -2,6 +2,7 @@ import os
 import re
 import os.path
 import time
+import json
 
 re_extension = re.compile('.+\.py[w]?')
 re_class = re.compile('[ ]*class ')
@@ -127,11 +128,20 @@ def report():
                                   end['classes'], end['methods'], end['functions'])))
 
 
+def saveinjson():
+    global files
+    filestat = open('statistics.json', 'w', encoding='utf-8')
+    filestat.write(
+        json.dumps({'statistics': list(map(lambda x: {'name': x.name, 'check_points': x.check_points},
+                                           files))}
+                   , indent=4)
+    )
+    filestat.close()
+
+
 def started():
     global files
     if os.path.exists('statistics.txt'):  # Проверка на наличие файла статистики.
-        pass
-    else:
         pass
     current_files = os.listdir(os.getcwd())
     #3|далить файл статистики из отслеживания
@@ -142,8 +152,9 @@ def started():
     current_files = list(map(lambda x: Pile(x), current_files))
     files.extend(current_files)
     print(report())
+    saveinjson()
 
 
 started()
 # input()
-#1|Добавить сохранение и загрузку статистики из фалйа. JSON
+#1|Добавить загрузку статистики из фалйа
