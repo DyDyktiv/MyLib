@@ -13,11 +13,16 @@ files = []
 
 
 class Pile:
-    def __init__(self, name):
+    def __init__(self, name, cp=None):
+        if cp is None:
+            cp = []
         self.name = name
         self.now = None
         self.ex = None
-        self.check_points = []
+        if type(cp) is list:
+            self.check_points = cp
+        else:
+            self.check_points = []
         self.check_point()
 
     def check_point(self):
@@ -35,7 +40,7 @@ class Pile:
                 check['methods'] += int(bool(re_method.match(s)))
                 check['functions'] += int(bool(re_function.match(s)))
             f.close()
-            #2|Научить проверять на одинаковые подряд идущие записи и перезаписывать время в последней такой
+            #1|Научить проверять на одинаковые подряд идущие записи и перезаписывать время в последней такой
             self.check_points.append(check)
         else:
             self.check_points.append({time.time(), None, None, None, None, None})
@@ -128,33 +133,41 @@ def report():
                                   end['classes'], end['methods'], end['functions'])))
 
 
-def saveinjson():
+def saveasjson():
     global files
     filestat = open('statistics.json', 'w', encoding='utf-8')
     filestat.write(
         json.dumps({'statistics': list(map(lambda x: {'name': x.name, 'check_points': x.check_points},
-                                           files))}
-                   , indent=4)
+                                           files))},
+                   indent=4)
     )
     filestat.close()
 
 
+def readasjson():
+    global files
+    if os.path.exists('statistics.json'):  # Проверка на наличие файла статистики.
+        filestat = open('statistics.json', 'r', encoding='utf-8')
+        s = filestat.read()
+        filestat.close()
+        for c in json.loads(s)['statistics']:
+            files.append(Pile(c['name'], c['check_points']))
+
+
 def started():
     global files
-    if os.path.exists('statistics.txt'):  # Проверка на наличие файла статистики.
-        pass
+    readasjson()
     current_files = os.listdir(os.getcwd())
-    #3|далить файл статистики из отслеживания
+    #2|далить файл статистики из отслеживания
     current_files = list(filter(lambda x: re_extension.match(x), current_files))
     for f in files:
-        if f in current_files:
-            current_files.remove(f)
+        if f.name in current_files:
+            current_files.remove(f.name)
     current_files = list(map(lambda x: Pile(x), current_files))
     files.extend(current_files)
     print(report())
-    saveinjson()
+    saveasjson()
 
 
 started()
 # input()
-#1|Добавить загрузку статистики из фалйа
